@@ -13,7 +13,11 @@ const LikeSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     })
-});
+},
+    {
+        timestamps: true, 
+    }
+);
 
 const Like = mongoose.model("Likes", LikeSchema);
 module.exports = Like;
