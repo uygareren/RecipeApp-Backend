@@ -1,5 +1,6 @@
 const Recipe = require("../modal/Recipe");
 const Category = require("../modal/Category");
+const Like = require("../modal/Like");
 
 
 exports.postRecipe = async (req, res, next) => {
@@ -27,24 +28,30 @@ exports.postRecipe = async (req, res, next) => {
 
 }
 exports.getRecipeById = async (req, res, next) => {
-
     const recipe_id = req.params.recipe_id;
 
-    if(!recipe_id){
-        return res.status(400).json({ status: 400, success: false, message: "Id can not be empty!" });
+    if (!recipe_id) {
+        return res.status(400).json({ status: 400, success: false, message: "Id cannot be empty!" });
     }
 
     try {
         const recipe = await Recipe.findById(recipe_id);
-        return res.status(200).json({ status: 200, success: true, message: "Succesfull", data:{recipe} });
         
-        
-    } catch (error) {
-        return res.status(500).json({ status: 500, success: false, message: "Internal Server Error" });
-        
-    }
+        if (!recipe) {
+            return res.status(404).json({ status: 404, success: false, message: "Recipe not found" });
+        }
 
-}
+        const likeData = await Like.find({ recipeId: recipe_id, isLike: true });
+
+        const data = { recipe, likeData: likeData ? likeData : null };
+
+        return res.status(200).json({ status: 200, success: true, message: "Successful", data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ status: 500, success: false, message: "Internal Server Error" });
+    }
+};
+
 
 exports.getRecipesByCategoryId = async (req, res, next) => {
 
