@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 // routers
 const adminRoutes = require("./routers/Auth");
 const categoryRoutes = require("./routers/Category");
+const recipeRoutes = require("./routers/Recipe");
 
 
 const app = express();
@@ -17,6 +18,7 @@ mongoose.connect('mongodb+srv://123:123@recipeapp.neok85z.mongodb.net/');
 
 app.use(adminRoutes);
 app.use(categoryRoutes);
+app.use(recipeRoutes);
 
 // Adding a route handler for the root URL
 app.get('/', (req, res) => {

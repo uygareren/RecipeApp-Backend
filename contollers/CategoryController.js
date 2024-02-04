@@ -1,14 +1,14 @@
 const Category = require("../modal/Category");
 
 exports.addCategory = async (req, res, next) => {
-    const { categoryName } = req.body;
+    const {categoryImage, categoryName } = req.body;
 
     if (!categoryName) {
         return res.status(400).json({ status: 400, success: false, message: "Category name can not be empty!" });
     }
 
     try {
-        const newCategory = new Category({ categoryName });
+        const newCategory = new Category({categoryImage, categoryName });
         const result = await newCategory.save();
 
         return res.status(200).json({ status: 200, success: true, message: "Category was saved successfully", data: result });
