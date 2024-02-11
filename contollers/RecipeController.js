@@ -5,7 +5,7 @@ const Like = require("../modal/Like");
 
 exports.postRecipe = async (req, res, next) => {
 
-    const {recipeName, image, ingredients, recipeDescription,categoryId } = req.body;
+    const {recipeName, image, ingredients,worldCuisinesTagId, recipeDescription,categoryId } = req.body;
 
     if(recipeName == "" || recipeDescription == "" || categoryId == ""){
         return res.status(400).json({ status: 400, success: false, message: "Error" });
@@ -13,7 +13,7 @@ exports.postRecipe = async (req, res, next) => {
     }
 
     try {
-        const newRecipe = new Recipe({recipeName, image, ingredients, recipeDescription, categoryId});
+        const newRecipe = new Recipe({recipeName, image, ingredients, worldCuisinesTagId,recipeDescription, categoryId});
         const result = await newRecipe.save();
 
         return res.status(200).json({ status: 200, success: true, message: "Recipe was saved succesfully!" });

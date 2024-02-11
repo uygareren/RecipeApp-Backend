@@ -11,6 +11,7 @@ const userEventRouter = require("./routers/UserEvents");
 const followRouter = require("./routers/Follow");
 const ingredientsRouter = require("./routers/Ingredients");
 const worldCuisinesRouter = require("./routers/WorldCuisines");
+const userInterestRouter = require("./routers/UserInterest");
 
 
 const app = express();
@@ -27,6 +28,7 @@ app.use(userEventRouter);
 app.use(followRouter);
 app.use(ingredientsRouter);
 app.use(worldCuisinesRouter);
+app.use(userInterestRouter);
 
 // Adding a route handler for the root URL
 app.get('/', (req, res) => {

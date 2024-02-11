@@ -11,6 +11,9 @@ const RecipeSchema = new mongoose.Schema(
       required: true,
     },
     ingredients: [{ type: String }],
+    worldCuisinesTagId:{
+      type: String,
+    },
     recipeDescription: {
       type: String,
       required: true,
