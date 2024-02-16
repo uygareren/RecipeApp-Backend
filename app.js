@@ -12,6 +12,7 @@ const followRouter = require("./routers/Follow");
 const ingredientsRouter = require("./routers/Ingredients");
 const worldCuisinesRouter = require("./routers/WorldCuisines");
 const userInterestRouter = require("./routers/UserInterest");
+const measurementsRouter = require("./routers/Measurements");
 
 
 const app = express();
@@ -29,6 +30,7 @@ app.use(followRouter);
 app.use(ingredientsRouter);
 app.use(worldCuisinesRouter);
 app.use(userInterestRouter);
+app.use(measurementsRouter);
 
 // Adding a route handler for the root URL
 app.get('/', (req, res) => {
