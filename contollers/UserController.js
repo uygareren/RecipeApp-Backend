@@ -2,6 +2,7 @@ const User = require("../modal/User");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 const jwt = require('jsonwebtoken');
+const { trace } = require("../routers/User");
 
 
 exports.register = async (req, res, next) => {
@@ -131,3 +132,76 @@ exports.logout = (req, res) => {
         return res.status(401).json({ success: false, message: "Unauthorized - Invalid token" });
     }
 };
+
+
+exports.updateProfile = async (req, res, next) => {
+    const {user_id, name, surname, image, phone, country, city} = req.body;
+
+    if(!user_id || !name || !surname || !image || !phone || !country || !city){
+        return res.status(400).json({status: 400, success:false, message: "Error"})
+    }
+
+    try {
+        const user = await User.findById(user_id);
+
+        user.name = name;
+        user.surname = surname;
+        user.image = image;
+        user.phone = phone;
+        user.country = country;
+        user.city = city;
+        
+        await user.save();
+
+        return res.status(200).json({status:200, success:true, message:"Succesfull"});
+
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Error" });
+    }
+
+}
+
+exports.getUserDetail = async (req, res, next) => {
+    const {user_id} = req.body;
+
+    if(!user_id){
+        return res.status(400).json({status: 400, success:false, message: "Error"})
+    }
+
+    try {
+        const user = await User.findById(user_id);
+        if(user){
+            return res.status(200).json({status:200, success:true, message: "Successfull", user})
+        }else{
+            return res.status(400).json({status: 400, success:false, message: "No any user!"})
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Error" });
+    }
+}
+
+
+exports.postInterests = async (req, res, next) => {
+
+    const {user_id, interests_data} = req.body;
+
+    if(!interests_data || !user_id){
+        return res.status(400).json({status: 400, success:false, message: "Interests Data and User id is required!"})
+    }
+
+    try {
+
+        const user = await User.findById(user_id);
+
+        user.interests = interests_data;
+
+        await user.save();
+
+        return res.status(200).json({status: 200, success:true, message: "Successfull!"})
+        
+    } catch (error) {
+        return res.status(500).json({status:500, success: false, message: "Error" });
+    }
+
+}
+

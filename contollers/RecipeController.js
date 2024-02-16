@@ -5,7 +5,8 @@ const Like = require("../modal/Like");
 
 exports.postRecipe = async (req, res, next) => {
 
-    const {recipeName, image, ingredients,worldCuisinesTagId, recipeDescription,categoryId } = req.body;
+    const {recipeName, image, ingredients, ingredients_with_measurements,worldCuisinesTagId, 
+    recipeDescription,categoryId,calory,level,cooking_time } = req.body;
 
     if(recipeName == "" || recipeDescription == "" || categoryId == ""){
         return res.status(400).json({ status: 400, success: false, message: "Error" });
@@ -13,7 +14,8 @@ exports.postRecipe = async (req, res, next) => {
     }
 
     try {
-        const newRecipe = new Recipe({recipeName, image, ingredients, worldCuisinesTagId,recipeDescription, categoryId});
+        const newRecipe = new Recipe({recipeName, image, ingredients, ingredients_with_measurements,
+        worldCuisinesTagId,recipeDescription, categoryId,calory, level,cooking_time});
         const result = await newRecipe.save();
 
         return res.status(200).json({ status: 200, success: true, message: "Recipe was saved succesfully!" });
@@ -75,6 +77,8 @@ exports.getRecipesByCategoryId = async (req, res, next) => {
 
 exports.getRecipeByIngredients = async (req, res, next) => {
     const ingredients_by_user = req.body.ingredients;
+
+    console.log("ingredients", ingredients_by_user);
 
     if (ingredients_by_user.length === 0) {
         return res.status(400).json({ status: 400, success: false, message: "Ingredients can not be empty" });

@@ -11,6 +11,20 @@ const RecipeSchema = new mongoose.Schema(
       required: true,
     },
     ingredients: [{ type: String }],
+    ingredients_with_measurements: [
+      {ingredients_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+      },
+      measurement_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+      },
+      measurement: {
+        type: String,
+        required: true,
+      },}
+    ],
     worldCuisinesTagId:{
       type: String,
     },
@@ -22,6 +36,18 @@ const RecipeSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    calory:{
+      type:String,
+      required:true
+    },
+    level:{
+      type:String,
+      required:true
+    },
+    cooking_time:{
+      type: String,
+      required: true
+    }
   },
   {
     timestamps: true, 

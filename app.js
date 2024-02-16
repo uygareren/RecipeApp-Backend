@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 
 // routers
-const adminRoutes = require("./routers/Auth");
+const userRoutes = require("./routers/User");
 const categoryRoutes = require("./routers/Category");
 const recipeRoutes = require("./routers/Recipe");
 const userEventRouter = require("./routers/UserEvents");
@@ -22,7 +22,7 @@ const PORT = 3000;
 
 mongoose.connect('mongodb+srv://123:123@recipeapp.neok85z.mongodb.net/');
 
-app.use(adminRoutes);
+app.use(userRoutes);
 app.use(categoryRoutes);
 app.use(recipeRoutes);
 app.use(userEventRouter);
