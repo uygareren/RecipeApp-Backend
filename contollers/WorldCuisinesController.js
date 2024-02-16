@@ -11,14 +11,11 @@ exports.postWorldCuisines = async (req, res, next) => {
         const existing_world_cuisines = await WorldCuisines.findOne();
 
         if (existing_world_cuisines) {
-            // Use push with spread operator to add items to the array
             existing_world_cuisines.cuisines_name.push(...world_cuisines_data.map(data => ({ type: data })));
             
-            // Save the updated document
             await existing_world_cuisines.save();
         } else {
-            // If document doesn't exist, create a new one
-            const newWorldCuisines = new WorldCuisines({
+            const newWorldCuisines = await new WorldCuisines({
                 cuisines_name: world_cuisines_data.map(data => ({ type: data }))
             });
             await newWorldCuisines.save();
