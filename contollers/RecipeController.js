@@ -96,6 +96,25 @@ exports.getRecipeByIngredients = async (req, res, next) => {
     }
 };
 
+exports.getRecipesByInterests = async (req, res, next) => {
+    const {interests_data_by_user} = req.body;
+
+    if(!interests_data_by_user){
+        return res.status(400).json({ status: 400, success: false, message: "User Interests Data can not be empty" });
+    }
+
+    try {
+        const data = await Recipe.find({worldCuisinesTagId : {$in : interests_data_by_user}});
+        if(data.length == 0){
+            return res.status(400).json({ status: 400, success: false, message: "There is no any recipe!",});
+    
+            }
+            return res.status(200).json({ status: 200, success: true, message: "Successful", data });
+    } catch (error) {
+        return res.status(500).json({ status: 500, success: false, message: "Internal Server Error" });
+    }
+}
+
 
 // exports.getPopularRecipe = (req, res, next) => {
     
