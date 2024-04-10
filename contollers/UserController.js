@@ -3,6 +3,11 @@ const bcrypt = require("bcrypt");
 const validator = require("validator");
 const jwt = require('jsonwebtoken');
 const { trace } = require("../routers/User");
+const Recipe = require("../modal/Recipe");
+const Like = require("../modal/Like");
+const multer = require("multer");
+
+
 
 
 exports.register = async (req, res, next) => {
@@ -68,8 +73,7 @@ exports.login = async (req, res, next) => {
         return res.status(200).json({
             status: 200,
             success: true,
-            data: { userId: user._id, name: user.name, surname: user.surname, email: user.email },
-            token: token
+            data: { userId: user._id, name: user.name, surname: user.surname, email: user.email, token: token },
         });
     } catch (error) {
         console.error("Login error:", error);
@@ -79,7 +83,12 @@ exports.login = async (req, res, next) => {
 
 
 exports.updatePassword = async (req, res, next) => {
-    const { userId, currentPassword, newPassword } = req.body;
+    const { userId, currentPassword, newPassword1, newPassword2 } = req.body;
+
+    
+    if (!newPassword1 || !newPassword2 || newPassword1 !== newPassword2) {
+        return res.status(400).json({ status: 400, success: false, message: "New passwords do not match" });
+    }
 
     try {
         // Kullanıcının ID'sine göre veritabanında arama yap
@@ -98,10 +107,10 @@ exports.updatePassword = async (req, res, next) => {
         }
 
         // Yeni şifreyi hashle
-        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        const hashedNewPassword1 = await bcrypt.hash(newPassword1, 10);
 
         // Şifreyi güncelle
-        user.password = hashedNewPassword;
+        user.password = hashedNewPassword1;
         await user.save();
 
         return res.status(200).json({ status: 200, success: true, message: "Password updated successfully" });
@@ -135,9 +144,9 @@ exports.logout = (req, res) => {
 
 
 exports.updateProfile = async (req, res, next) => {
-    const {user_id, name, surname, image, phone, country, city} = req.body;
+    const {user_id, name, surname, email,phone, country, city, biography} = req.body;
 
-    if(!user_id || !name || !surname || !image || !phone || !country || !city){
+    if(!user_id || !name || !surname || !email || !phone || !country || !city || !biography){
         return res.status(400).json({status: 400, success:false, message: "Error"})
     }
 
@@ -146,14 +155,15 @@ exports.updateProfile = async (req, res, next) => {
 
         user.name = name;
         user.surname = surname;
-        user.image = image;
+        user.email = email;
         user.phone = phone;
         user.country = country;
         user.city = city;
+        user.biography = biography;
         
         await user.save();
 
-        return res.status(200).json({status:200, success:true, message:"Succesfull"});
+        return res.status(200).json({status:200, success:true, message:"Succesfull", data:user});
 
     } catch (error) {
         return res.status(500).json({ success: false, message: "Error" });
@@ -161,8 +171,39 @@ exports.updateProfile = async (req, res, next) => {
 
 }
 
+
+
+exports.updateProfileImage = async (req, res, next) => {
+    const { user_id } = req.params;
+    const image = req.file.filename; // Assuming Multer middleware handles file upload
+
+    try {
+        // Find the user by user_id
+        const user = await User.findById(user_id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // // Convert the base64 string to a Buffer
+        // const imageBuffer = Buffer.from(image, 'base64');
+
+        // // Update the image field with the new image data
+        user.image = image;
+
+        // Save the updated user document
+        await user.save();
+
+        res.status(200).json({ message: "Profile image successfully updated.", data:image, success:true });
+    } catch (error) {
+        console.error("Error updating profile image:", error);
+        res.status(500).json({ message: "An error occurred, profile image could not be updated." });
+    }
+};
+
+
 exports.getUserDetail = async (req, res, next) => {
-    const {user_id} = req.body;
+    const {user_id} = req.params;
 
     if(!user_id){
         return res.status(400).json({status: 400, success:false, message: "Error"})
@@ -171,7 +212,15 @@ exports.getUserDetail = async (req, res, next) => {
     try {
         const user = await User.findById(user_id);
         if(user){
-            return res.status(200).json({status:200, success:true, message: "Successfull", user})
+            return res.status(200).json({
+                status: 200,
+                success: true,
+                message: "Successful",
+                user: {
+                  ...user.toObject(), // Convert to plain object
+                  userId: user._id, // Rename _id to userId
+                },
+              });
         }else{
             return res.status(400).json({status: 400, success:false, message: "No any user!"})
         }
@@ -205,3 +254,56 @@ exports.postInterests = async (req, res, next) => {
 
 }
 
+exports.getRecipeByUserId = async (req,res,next) => {
+    const {user_id} = req.body;
+
+    if(!user_id){
+        return res.status(400).json({status: 400, success:false, message: "User id is required!"})
+    }
+
+    try {
+        const data = await Recipe.find({userId:user_id});
+        return res.status(200).json({status: 200, success:true, message: "Successfull!", data:data});
+
+    } catch (error) {
+        return res.status(500).json({status:500, success: false, message: "Error" });
+        
+    }
+
+}
+
+exports.userSearch = async(req,res,next) => {
+    const {userQuery} =  req.query;
+
+    const regex = new RegExp(userQuery, 'i');
+
+    const user = await User.find({ name: regex });
+
+    const userData = user.map(user => ({
+        id:user._id,
+        name: user.name,
+        surname: user.surname,
+        image:user.image
+    }));
+
+    res.status(200).json({ success: true, data: userData });
+
+
+}
+
+
+exports.getLikedRecipes = async (req, res, next) => {
+    const { user_id } = req.query; 
+
+    try {
+        const likes = await Like.find({ userId: user_id }).select('recipeId');
+
+        const recipeIds = likes.map(like => like.recipeId);
+
+        const recipes = await Recipe.find({ _id: { $in: recipeIds } });
+
+        return res.status(200).json({ success: true, data: recipes });
+    } catch (error) {
+        return res.status(500).json({ success: false, error: error.message });
+    }
+};

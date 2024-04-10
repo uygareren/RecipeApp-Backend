@@ -7,14 +7,39 @@ const FollowSchema = new mongoose.Schema({
     },
     followed: [
         {
-            type: String
+            _id: {
+                type: String
+            },
+            name: {
+                type: String
+            },
+            surname: {
+                type: String
+            },
+            image: {
+                type: Buffer,  
+                default: null
+            }
         }
     ],
+    
     follower: [
         {
-            type: String
+            _id: {
+                type: String
+            },
+            name: {
+                type: String
+            },
+            surname: {
+                type: String
+            },
+            image: {
+                type: Buffer,  
+                default: null
+            }
         }
-    ]
+    ],
 });
 
 const Follow = mongoose.model("Follow", FollowSchema);

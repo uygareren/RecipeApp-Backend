@@ -19,8 +19,6 @@ exports.addCategory = async (req, res, next) => {
 }
 
 exports.getAllCategory = async (req, res, next) => {
-
-    const categories = Category.find({});
     
     try {
         const categories = await Category.find({});

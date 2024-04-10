@@ -34,6 +34,23 @@ exports.postLike = async (req, res, next) => {
     }
 };
 
+exports.removeLike = async (req, res, next) => {
+    const { recipeId, userId } = req.body;
+
+    try {
+        // Delete the like from the database
+        const deletedLike = await Like.findOneAndDelete({ userId, recipeId, isLike: true });
+
+        if (deletedLike) {
+            return res.status(200).json({ status: 200, success: true, message: "Like removed successfully" });
+        } else {
+            return res.status(404).json({ status: 404, success: false, message: "Like not found" });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ status: 500, success: false, message: "Internal Server Error" });
+    }
+};
 
 
 exports.postComment = async (req, res, next) => {

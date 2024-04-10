@@ -12,5 +12,7 @@ router.post("/add_follower", followController.addFollower);
 router.get("/get_follower", followController.getAllFollower);
 router.post("/remove_follower/:follower_id", followController.removeFollower);
 
+router.post("/get_following", followController.getAllFollowing);
+
 
 module.exports = router;

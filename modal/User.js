@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
         default: null
     }],
     image:{
-        type: Buffer,
+        type: String,
         default: null
     },
     phone:{
@@ -37,6 +37,10 @@ const userSchema = new mongoose.Schema({
     city:{
         type: String,
         default: null
+    },
+    biography:{
+        type: String,
+        default:null
     }
 });
 
