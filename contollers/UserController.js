@@ -6,6 +6,8 @@ const { trace } = require("../routers/User");
 const Recipe = require("../modal/Recipe");
 const Like = require("../modal/Like");
 const multer = require("multer");
+const Comment = require('../modal/Comment');
+require('dotenv').config();
 
 
 
@@ -14,11 +16,11 @@ exports.register = async (req, res, next) => {
     const { name, surname, email, password_1, password_2 } = req.body;
 
     if (password_1 !== password_2) {
-        return res.status(400).json({ success: false, message: "Passwords do not match" });
+        return res.status(400).json({ success: false, message_en: "Passwords do not Match!", message_tr: "Parolalar Eşleşmiyor!" });
     }
 
     if (!validator.isEmail(email)) {
-        return res.status(400).json({ success: false, message: "Invalid email format" });
+        return res.status(400).json({ success: false, message_en: "Invalid Email Format", message_tr: "Geçersiz Email!" });
     }
 
     try {
@@ -26,7 +28,7 @@ exports.register = async (req, res, next) => {
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
-            return res.status(400).json({ success: false, message: "Email is already registered!" });
+            return res.status(400).json({ success: false, message_en: "Email is Already Registered!", message_tr:"Email Zaten Kayıtlı!"});
         }
 
         const hashedPassword = await bcrypt.hash(password_1, 10);
@@ -53,22 +55,22 @@ exports.login = async (req, res, next) => {
 
     try {
         // Kullanıcının e-posta adresine göre veritabanında arama yap
-        const user = await User.findOne({ email });
+        const user = await User.findOne({email:email});
 
         // Kullanıcı bulunamazsa
         if (!user) {
-            return res.status(401).json({ success: false, message: "Invalid email or password" });
+            return res.status(401).json({ success: false, message_en: "Invalid email or password", message_tr: "Email veya Parola Hatalı!" });
         }
 
         // Şifreyi kontrol et
         const passwordMatch = await bcrypt.compare(password, user.password);
 
         if (!passwordMatch) {
-            return res.status(401).json({ success: false, message: "Invalid email or password" });
+            return res.status(401).json({ success: false, message_en: "Invalid password", message_tr: "Geçersiz Parola!" });
         }
 
         // Giriş başarılı ise token oluştur ve kullanıcı bilgilerini döndür
-        const token = jwt.sign({ userId: user._id, email: user.email }, 'your_secret_key', { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET_KEY, { expiresIn: '30d' });
 
         return res.status(200).json({
             status: 200,
@@ -170,7 +172,6 @@ exports.updateProfile = async (req, res, next) => {
     }
 
 }
-
 
 
 exports.updateProfileImage = async (req, res, next) => {
@@ -307,3 +308,4 @@ exports.getLikedRecipes = async (req, res, next) => {
         return res.status(500).json({ success: false, error: error.message });
     }
 };
+

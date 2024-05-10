@@ -118,38 +118,44 @@ exports.getAllFollowed = async (req, res, next) => {
 };
 
 exports.removeFollowed = async(req, res, next) => {
-    const {followed_id} = req.params;
-    const {user_id} = req.body;
+    const { user_id, followed_id } = req.body;
 
-    if(!followed_id || !user_id){
-        return res.status(400).json({ status: 400, success: false, message: "userId and follower_id are required!" });
+    if (!followed_id || !user_id) {
+        return res.status(400).json({ status: 400, success: false, message: "user_id and followed_id are required!" });
     }
-
 
     try {
-        const user = await Follow.findOne({userId: user_id});
+        // Remove followed_id from user_id's followed list
+        let user = await Follow.findOne({ userId: user_id });
 
-        if(user){
-            let index = user.followed.indexOf(followed_id);
-            
-            if(index !== -1){
+        if (user) {
+            let index = user.followed.findIndex(item => String(item._id) === String(followed_id));
+
+            if (index !== -1) {
                 user.followed.splice(index, 1);
                 await user.save();
-                
-                return res.status(200).json({status: 200, success: true, message:"Remove is Successfull!"});
-            } else {
-                throw new Error("User not found in following list");
             }
-
-        }else{
-            return res.status(400).json({status: 400, success: false, message:"There is no any user"});
         }
-        
+
+        // Remove user_id from followed_id's follower list
+        let followedUser = await Follow.findOne({ userId: followed_id });
+
+        if (followedUser) {
+            let index = followedUser.follower.findIndex(item => String(item._id) === String(user_id));
+
+            if (index !== -1) {
+                followedUser.follower.splice(index, 1);
+                await followedUser.save();
+            }
+        }
+
+        return res.status(200).json({ status: 200, success: true, message: "Remove is Successful!" });
     } catch (error) {
+        console.error(error);
         return res.status(500).json({ status: 500, success: false, message: "Internal Server Error" });
     }
-
 }
+
 
 
 
