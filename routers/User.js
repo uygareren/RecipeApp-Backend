@@ -37,6 +37,11 @@ router.get("/user-search", UserController.userSearch);
 
 router.get("/liked-recipes", UserController.getLikedRecipes);
 
+router.post("/post-made-meals-by-user", UserController.postMadeMealsByUser);
+router.get("/get-made-meals-by-user/:userId", UserController.getMadeMealsByUser);
+router.post("/delete-made-meals-by-user", UserController.deleteRecipeMadeMealsByUser);
+router.post("/post-done-made-meals", UserController.postDoneMeals);
+
 
 
 

@@ -7,6 +7,8 @@ const Recipe = require("../modal/Recipe");
 const Like = require("../modal/Like");
 const multer = require("multer");
 const Comment = require('../modal/Comment');
+const MadeMealsByUser = require('../modal/MadeMealsUser');
+const MadeMealsByRecipe = require('../modal/MadeMealsRecipe');
 require('dotenv').config();
 
 
@@ -308,4 +310,155 @@ exports.getLikedRecipes = async (req, res, next) => {
         return res.status(500).json({ success: false, error: error.message });
     }
 };
+
+exports.getMadeMealsByUser = async (req, res, next) => {
+    const {userId} = req.params;
+    
+    try {
+        if(!userId){
+            return res.status(400).json({ success: false, message_en: "User Id is required!", message_tr: "User Id Gerekli!" });
+        }
+
+        const meals = await MadeMealsByUser.find({userId:userId});
+        
+        return res.status(200).json({ success: true, data: meals });
+
+    } catch (error) {
+        return res.status(500).json({ success: false, error: error.message });
+        
+    }
+    
+}
+
+exports.postMadeMealsByUser = async (req, res, next) => {
+    const { userId, userName, userSurname, userImage, recipeId, recipeName, recipeImage, status } = req.body;
+
+    try {
+        if (!userId) {
+            return res.status(400).json({ success: false, message_en: "User Id is required!", message_tr: "User Id Gerekli!" });
+        }
+
+        let madeMealsUser = await MadeMealsByUser.findOne({ userId: userId });
+        let madeMealsRecipe = await MadeMealsByRecipe.findOne({ recipeId: recipeId });
+        
+
+        if (!madeMealsUser) {
+            // If no record exists for the user, create a new one
+            madeMealsUser = new MadeMealsByUser({
+                userId: userId,
+                recipes: []
+            });
+        }
+        if (!madeMealsRecipe) {
+            // If no record exists for the user, create a new one
+            madeMealsRecipe = new MadeMealsByRecipe({
+                recipeId: recipeId,
+                user: []
+            });
+        }
+
+        // Check if the recipe already exists for the user
+        const existingRecipe = madeMealsUser.recipes.find(recipe => recipe.recipeId === recipeId);
+
+        if (existingRecipe) {
+            return res.status(400).json({ success: false, message_en: "Recipe already exists for this user!", message_tr: "Bu kullanıcı için tarif zaten mevcut!" });
+        }
+
+        // Add the new recipe to the user's made meals
+        madeMealsUser.recipes.push({
+            recipeId: recipeId,
+            recipeName: recipeName,
+            recipeImage: recipeImage,
+            status: status
+        });
+
+        madeMealsRecipe.user.push({
+            userId:userId,
+            userName:userName,
+            userImage:userImage,
+            status:status
+        })
+
+        // Save the changes to the database
+        await madeMealsUser.save();
+        await madeMealsRecipe.save();
+
+        return res.status(200).json({ success: true, message_en: "Recipe added successfully!", message_tr: "Tarif başarıyla eklendi!" });
+        
+    } catch (error) {
+        return res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+exports.postDoneMeals = async (req, res, next) => {
+    const { userId, recipeId, status } = req.body;
+
+    try {
+        if (!userId) {
+            return res.status(400).json({ success: false, message_en: "User Id is required!", message_tr: "User Id Gerekli!" });
+        }
+        if (!recipeId) {
+            return res.status(400).json({ success: false, message_en: "Recipe Id is required!", message_tr: "Recipe Id Gerekli!" });
+        }
+
+        let mealInUser = await MadeMealsByUser.findOne({ userId: userId });
+        let mealByRecipe = await MadeMealsByRecipe.findOne({ recipeId: recipeId });
+
+        if (!mealInUser) {
+            return res.status(400).json({ success: false, message_en: "There are no recipes for this user!", message_tr: "Bu kullanıcı için herhangi bir tarif bulunamadı!" });
+        }
+
+        if (!mealByRecipe) {
+            return res.status(400).json({ success: false, message_en: "There are no users for this recipe!", message_tr: "Bu tarife ait herhangi bir kullanıcı bulunamadı!" });
+        }
+
+            const userRecipe = await mealInUser.recipes.filter((recipe) => recipe.recipeId == recipeId);
+            userRecipe[0].status = status;
+            mealInUser.recipes = userRecipe;
+
+            const recipeUser = await mealByRecipe.user.filter((user) => user.userId == userId);
+            recipeUser[0].status = status;
+            mealByRecipe.user = recipeUser;
+
+            // // Save the changes
+            await mealInUser.save();
+            await mealByRecipe.save();
+
+            return res.status(200).json({ success: true, message_en: "Status changed!", message_tr: "Durum Değiştirildi!" });
+    } catch (error) {
+        return res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+
+exports.deleteRecipeMadeMealsByUser = async (req, res, next) => {
+    const { userId, recipeId } = req.body;
+
+    try {
+        if (!userId) {
+            return res.status(400).json({ success: false, message_en: "User Id is required!", message_tr: "User Id Gerekli!" });
+        }
+
+        let meals = await MadeMealsByUser.findOne({ userId: userId });
+        let userInMeals = await MadeMealsByRecipe.findOne({recipeId: recipeId});
+
+        if (!meals || !meals.recipes || meals.recipes.length === 0) {
+            return res.status(400).json({ success: false, message_en: "There are no recipes for this user!", message_tr: "Bu kullanıcı için herhangi bir tarif bulunamadı!" });
+        }
+
+        // Filter out the recipe with the given recipeId
+        meals.recipes = meals.recipes.filter((meal) => meal.recipeId !== recipeId);
+        userInMeals.user = userInMeals.user.filter((user) => user.userId != userId);
+
+        await meals.save();
+        await userInMeals.save();
+
+        return res.status(200).json({ success: true, message_en: "Recipe deleted successfully!", message_tr: "Tarif başarıyla silindi!" });
+    } catch (error) {
+        return res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+
+
 

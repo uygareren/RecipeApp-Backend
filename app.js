@@ -36,7 +36,7 @@ app.use(measurementsRouter);
 
 // Adding a route handler for the root URL
 app.get('/', (req, res) => {
-    res.send(`Server running on port ${process.env.PORT}`);
+    res.send(`Server running on port ${process.env.DB_URI}`);
   });
   
 app.listen(process.env.PORT || 3000, () => {
