@@ -4,6 +4,7 @@ const Category = require("../modal/Category");
 const Like = require("../modal/Like");
 const Comment = require("../modal/Comment");
 const Follow = require("../modal/Follow");
+const MadeMealsByRecipe = require("../modal/MadeMealsRecipe");
 const multer = require('multer');
 
 
@@ -286,6 +287,38 @@ exports.getRecipesByFollower = async (req, res, next) => {
     }
 }
 
+exports.getMadeMealsByRecipe = async(req, res, next) => {
+    const { recipe_id } = req.params;
+
+    try {
+        if(!recipe_id){
+            return res.status(400).json({ status: 400, success: true, message: "Recipe id is required!"});
+        }
+
+        const data = await MadeMealsByRecipe.findOne({recipeId:recipe_id});
+
+        return res.status(200).json({ status: 200, success: true, message: "success", data: data });
+    } catch (error) {
+        return res.status(500).json({ status: 500, success: false, message: "Internal Server Error" });
+    }
+}
+
+exports.getDoneLengthMadeMealsByRecipe = async(req, res, next) => {
+    const { recipe_id } = req.params;
+
+    try {
+        if(!recipe_id){
+            return res.status(400).json({ status: 400, success: true, message: "Recipe id is required!"});
+        }
+
+        const data = await MadeMealsByRecipe.findOne({recipeId:recipe_id});
+        const doneUserData = data.user.filter((user) => user.status == 1);
+
+        return res.status(200).json({ status: 200, success: true, message: "success", data: doneUserData.length });
+    } catch (error) {
+        return res.status(500).json({ status: 500, success: false, message: "Internal Server Error" });
+    }
+}
 
 
 // exports.getPopularRecipe = (req, res, next) => {

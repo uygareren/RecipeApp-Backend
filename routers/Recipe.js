@@ -30,6 +30,8 @@ router.post("/recipe-by-interests", deleteRecipesWithBase64Image, RecipeControll
 router.get("/recipe-search", RecipeController.searchRecipes);
 router.post("/recipe-by-follower", RecipeController.getRecipesByFollower);
 router.post("/recipe-by-interest", RecipeController.getRecipeByInterest);
+router.get("/get-made-meals/:recipe_id", RecipeController.getMadeMealsByRecipe);
+router.get("/get-done-made-meals/:recipe_id", RecipeController.getDoneLengthMadeMealsByRecipe);
 
 
 module.exports = router;
